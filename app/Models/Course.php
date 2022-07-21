@@ -21,6 +21,17 @@ class Course extends Model
         'updated_at' => 'datetime:Y-m-d H:m:s'
     ];
 
+    public function scopeFilter($query, array $filters)
+    {
+        $query->when($filters['name'] ?? false, function ($query, $name) {
+            return $query->whereRaw("name LIKE '%".strtolower($name)."%'");
+        });
+
+        $query->when($filters['status'] ?? false, function ($query, $status) {
+            return $query->where('status', '=', $status);
+        });
+    }
+
     public function mentor()
     {
         return $this->belongsTo(Mentor::class);
