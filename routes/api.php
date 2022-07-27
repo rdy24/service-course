@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ChapterController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\MentorController;
 use Illuminate\Support\Facades\Route;
@@ -17,4 +18,5 @@ use Illuminate\Support\Facades\Route;
 
 Route::resource('mentors', MentorController::class);
 Route::resource('courses', CourseController::class);
+Route::resource('chapters', ChapterController::class);
 

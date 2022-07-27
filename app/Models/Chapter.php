@@ -20,6 +20,13 @@ class Chapter extends Model
         'updated_at' => 'datetime:Y-m-d H:m:s'
     ];
 
+    public function scopeFilter($query, array $filters)
+    {
+        $query->when($filters['courseId'] ?? false, function ($query, $courseId) {
+            return $query->where('course_id', '=', $courseId);
+        });
+    }
+
     public function lessons() 
     {
         return $this->hasMany(Lesson::class)->orderBy('id', 'ASC');

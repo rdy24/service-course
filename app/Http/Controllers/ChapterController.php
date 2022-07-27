@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Chapter;
 use App\Models\Course;
-use App\Models\Mentor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
-class CourseController extends Controller
+class ChapterController extends Controller
 {
   /**
     * Display a listing of the resource.
@@ -17,11 +17,11 @@ class CourseController extends Controller
   public function index()
   {
     try {
-      $courses = Course::query();
+      $chapters = Chapter::query();
 
       return response()->json([
         'status' => 'success',
-        'data' => $courses->filter(request(['name', 'status']))->paginate(10)->withQueryString(),
+        'data' => $chapters->filter(request(['courseId']))->get()
       ]);
     } catch (\Throwable $th) {
       return response()->json([
@@ -38,10 +38,10 @@ class CourseController extends Controller
     */
   public function create()
   {
-    return response()->json([
-      'status' => 'error',
-      'message' => 'not found'
-    ], 404);
+      return response()->json([
+          'status' => 'error',
+          'message' => 'not found'
+      ], 404);
   }
 
   /**
@@ -55,40 +55,34 @@ class CourseController extends Controller
     try {
       $rules = [
         'name' => 'required|string',
-        'certificate' => 'required|boolean',
-        'thumbnail' => 'string|url',
-        'type' => 'required|in:free,premium',
-        'status' => 'required|in:draft,published',
-        'price' => 'integer',
-        'level' => 'required|in:all-level,beginner,intermediate,advance',
-        'mentor_id' => 'required|integer',
-        'description' => 'string'
-      ]; 
+        'course_id' => 'required|integer'
+      ];
 
       $data = $request->all();
 
       $validator = Validator::make($data, $rules);
 
-      if($validator->fails()){
+      if ($validator->fails()) {
         return response()->json([
           'status' => 'error',
           'message' => $validator->errors()
         ], 400);
       }
 
-      $mentorId = $request->mentor_id;
-      $mentor = Mentor::find($mentorId);
-      if(!$mentor){
+      $courseId = $request->course_id;
+      $course = Course::find($courseId);
+
+      if(!$course) {
         return response()->json([
           'status' => 'error',
-          'message' => 'mentor not found'
+          'message' => 'course not found'
         ], 404);
       }
 
-      $course = Course::create($data);
+      $chapter = Chapter::create($data);
       return response()->json([
         'status' => 'success',
-        'data' => $course
+        'data' => $chapter
       ]);
     } catch (\Throwable $th) {
       return response()->json([
@@ -106,7 +100,25 @@ class CourseController extends Controller
     */
   public function show($id)
   {
-      //
+    try {
+      $chapter = Chapter::find($id);
+      if (!$chapter) {
+        return response()->json([
+          'status' => 'error',
+          'message' => 'chapter not found'
+        ], 404);
+      }
+
+      return response()->json([
+        'status' => 'success',
+        'data' => $chapter
+      ]);
+    } catch (\Throwable $th) {
+      return response()->json([
+        'status' => 'error',
+        'message' => $th->getMessage()
+      ], 500);
+    }
   }
 
   /**
@@ -117,7 +129,10 @@ class CourseController extends Controller
     */
   public function edit($id)
   {
-      //
+    return response()->json([
+      'status' => 'error',
+      'message' => 'not found'
+    ], 404);
   }
 
   /**
@@ -132,51 +147,43 @@ class CourseController extends Controller
     try {
       $rules = [
         'name' => 'string',
-        'certificate' => 'boolean',
-        'thumbnail' => 'string|url',
-        'type' => 'in:free,premium',
-        'status' => 'in:draft,published',
-        'price' => 'integer',
-        'level' => 'in:all-level,beginner,intermediate,advance',
-        'mentor_id' => 'integer',
-        'description' => 'string'
+        'course_id' => 'required|integer' 
       ];
 
       $data = $request->all();
 
       $validator = Validator::make($data, $rules);
 
-      if($validator->fails()){
+      if($validator->fails()) {
         return response()->json([
           'status' => 'error',
           'message' => $validator->errors()
         ], 400);
       }
+      $chapter = Chapter::find($id);
 
-      $course = Course::find($id);
-      if(!$course){
+      if(!$chapter) {
+        return response()->json([
+          'status' => 'error',
+          'message' => 'chapter not found'
+        ], 404);
+      }
+      
+      $courseId = $request->course_id;
+      $course = Course::find($courseId);
+      if(!$course) {
         return response()->json([
           'status' => 'error',
           'message' => 'course not found'
         ], 404);
       }
 
-      $mentorId = $request->mentor_id;
-      if($mentorId) {
-        $mentor = Mentor::find($mentorId);
-        if(!$mentor){
-          return response()->json([
-            'status' => 'error',
-            'message' => 'mentor not found'
-          ], 404);
-        }
-      }
-      $course->update($data);
+
+      $chapter->update($data);
       return response()->json([
         'status' => 'success',
-        'data' => $course
+        'data' => $chapter
       ]);
-
     } catch (\Throwable $th) {
       return response()->json([
         'status' => 'error',
@@ -194,20 +201,18 @@ class CourseController extends Controller
   public function destroy($id)
   {
     try {
-      $course = Course::find($id);
-
-      if(!$course){
+      $chapter = Chapter::find($id);
+      if (!$chapter) {
         return response()->json([
           'status' => 'error',
-          'message' => 'course not found'
+          'message' => 'chapter not found'
         ], 404);
       }
 
-      $course->delete();
-
+      $chapter->delete();
       return response()->json([
         'status' => 'success',
-        'data' => 'course deleted'
+        'message' => 'chapter deleted'
       ]);
     } catch (\Throwable $th) {
       return response()->json([
@@ -215,6 +220,5 @@ class CourseController extends Controller
         'message' => $th->getMessage()
       ], 500);
     }
-    
   }
 }

@@ -15,12 +15,19 @@ class MentorController extends Controller
     */
   public function index()
   {
-    $mentors = Mentor::all();
+    try {
+      $mentors = Mentor::all();
     
-    return response()->json([
-      'status' => 'success',
-      'data' => $mentors
-    ]);
+      return response()->json([
+        'status' => 'success',
+        'data' => $mentors
+      ]);
+    } catch (\Throwable $th) {
+      return response()->json([
+        'status' => 'error',
+        'message' => $th->getMessage()
+      ], 500);
+    }
   }
 
   /**
@@ -44,29 +51,36 @@ class MentorController extends Controller
     */
   public function store(Request $request)
   {
-    $rules = [
-        'name' => 'required|string',
-        'profile' => 'required|url',
-        'profession' => 'required|string',
-        'email' => 'required|email|unique:mentors',
-    ];
+    try {
+      $rules = [
+          'name' => 'required|string',
+          'profile' => 'required|url',
+          'profession' => 'required|string',
+          'email' => 'required|email|unique:mentors',
+      ];
 
-    $data = $request->all();
+      $data = $request->all();
 
-    $validator = Validator::make($data, $rules);
+      $validator = Validator::make($data, $rules);
 
-    if ($validator->fails()) {
-        return response()->json([
-            'status' => 'error',
-            'message' => $validator->errors()
-        ], 400);
+      if ($validator->fails()) {
+          return response()->json([
+              'status' => 'error',
+              'message' => $validator->errors()
+          ], 400);
+      }
+
+      $mentor = Mentor::create($data);
+      return response()->json([
+          'status' => 'success',
+          'data' => $mentor
+      ]);
+    } catch (\Throwable $th) {
+      return response()->json([
+        'status' => 'error',
+        'message' => $th->getMessage()
+      ], 500);
     }
-
-    $mentor = Mentor::create($data);
-    return response()->json([
-        'status' => 'success',
-        'data' => $mentor
-    ]);
   }
 
   /**
@@ -77,19 +91,26 @@ class MentorController extends Controller
     */
   public function show($id)
   {
-    $mentor = Mentor::find($id);
-
-    
-    if(!$mentor) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'mentor not found'
-        ], 404);
+    try {
+      $mentor = Mentor::find($id);
+      
+      if(!$mentor) {
+          return response()->json([
+              'status' => 'error',
+              'message' => 'mentor not found'
+          ], 404);
+      }
+      return response()->json([
+          'status' => 'success',
+          'data' => $mentor
+      ]);
+    } catch (\Throwable $th) {
+      return response()->json([
+        'status' => 'error',
+        'message' => $th->getMessage()
+      ], 500);
     }
-    return response()->json([
-        'status' => 'success',
-        'data' => $mentor
-    ]);
+
   }
 
   /**
@@ -115,42 +136,50 @@ class MentorController extends Controller
     */
   public function update(Request $request, $id)
   {
-    $mentor = Mentor::find($id);
-    
-    if(!$mentor) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'mentor not found'
-        ], 404);
+    try {
+      $mentor = Mentor::find($id);
+      
+      if(!$mentor) {
+          return response()->json([
+              'status' => 'error',
+              'message' => 'mentor not found'
+          ], 404);
+      }
+      
+      $rules = [
+          'name' => 'string',
+          'profile' => 'url',
+          'profession' => 'string',
+      ];
+
+      if($request->email != $mentor->email) {
+          $rules['email'] = 'email|unique:mentors';
+      }
+
+      $data = $request->all();
+
+
+      $validator = Validator::make($data, $rules);
+
+      if ($validator->fails()) {
+          return response()->json([
+              'status' => 'error',
+              'message' => $validator->errors()
+          ], 400);
+      }
+
+      $mentor->update($data);
+      return response()->json([
+          'status' => 'success',
+          'data' => $mentor
+      ]);
+    } catch (\Throwable $th) {
+      return response()->json([
+        'status' => 'error',
+        'message' => $th->getMessage()
+      ], 500);
     }
-    
-    $rules = [
-        'name' => 'required|string',
-        'profile' => 'required|url',
-        'profession' => 'required|string',
-    ];
 
-    if($request->email != $mentor->email) {
-        $rules['email'] = 'required|email|unique:mentors';
-    }
-
-    $data = $request->all();
-
-
-    $validator = Validator::make($data, $rules);
-
-    if ($validator->fails()) {
-        return response()->json([
-            'status' => 'error',
-            'message' => $validator->errors()
-        ], 400);
-    }
-
-    $mentor->update($data);
-    return response()->json([
-        'status' => 'success',
-        'data' => $mentor
-    ]);
   }
 
   /**
@@ -161,19 +190,27 @@ class MentorController extends Controller
     */
   public function destroy($id)
   {
-    $mentor = Mentor::find($id);
+    try {
+      $mentor = Mentor::find($id);
 
-    if(!$mentor) {
+      if(!$mentor) {
         return response()->json([
             'status' => 'error',
             'message' => 'mentor not found'
         ], 404);
-    }
+      }
 
-    $mentor->delete();
-    return response()->json([
-        'status' => 'success',
-        'message' => 'mentor deleted'
-    ]);
+      $mentor->delete();
+      return response()->json([
+          'status' => 'success',
+          'message' => 'mentor deleted'
+      ]);
+    } catch (\Throwable $th) {
+      return response()->json([
+        'status' => 'error',
+        'message' => $th->getMessage()
+      ], 500);
+    }
+    
   }
 }
