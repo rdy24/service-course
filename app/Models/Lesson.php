@@ -19,4 +19,10 @@ class Lesson extends Model
     protected $fillable = [
         'name', 'video', 'chapter_id'
     ];
+
+    public function scopeFilter($query, array $filters) {
+        $query->when($filters['chapterId'] ?? false, function ($query, $chapterId) {
+            return $query->where('chapter_id', '=', $chapterId);
+        });
+    }
 }
