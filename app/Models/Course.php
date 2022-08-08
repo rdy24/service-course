@@ -11,6 +11,8 @@ class Course extends Model
 
     protected $table = 'courses';
 
+    protected $with = ['mentor', 'images', 'chapters.lessons'];
+
     protected $fillable = [
         'name', 'certificate', 'thumbnail', 'type',
         'status', 'price', 'level', 'description', 'mentor_id'
@@ -40,5 +42,10 @@ class Course extends Model
     public function chapters()
     {
         return $this->hasMany(Chapter::class)->orderBy('id', 'ASC');
+    }
+
+    public function images()
+    {
+        return $this->hasMany(ImageCourse::class)->orderBy('id', 'DESC');
     }
 }

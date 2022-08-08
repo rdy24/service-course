@@ -6,6 +6,7 @@ use App\Http\Controllers\ImageCourseController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\MentorController;
 use App\Http\Controllers\MyCourseController;
+use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -25,4 +26,5 @@ Route::resource('chapters', ChapterController::class);
 Route::resource('lessons', LessonController::class);
 Route::resource('image-courses', ImageCourseController::class);
 Route::resource('my-courses', MyCourseController::class);
+Route::resource('reviews', ReviewController::class);
 
