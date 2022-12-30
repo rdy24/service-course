@@ -28,3 +28,4 @@ Route::resource('image-courses', ImageCourseController::class);
 Route::resource('my-courses', MyCourseController::class);
 Route::resource('reviews', ReviewController::class);
 
+Route::post('my-courses/premium', [MyCourseController::class, 'createPremiumAccess']);
